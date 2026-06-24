@@ -1,0 +1,5 @@
+host,hostname,port,protocol,state,service,product,version,risk,reason,recommendation
+192.168.56.10,lab-server.local,22,tcp,open,ssh,OpenSSH,8.9p1,Low,Open service found; no high-risk rule matched.,"Confirm business need, patch level, exposure, and access controls."
+192.168.56.10,lab-server.local,80,tcp,open,http,Apache httpd,2.4.52,Medium,"HTTP service should be reviewed for TLS, headers, and exposed admin panels.","Prefer HTTPS, review security headers, restrict admin paths, and patch the web stack."
+192.168.56.10,lab-server.local,445,tcp,open,microsoft-ds,Samba smbd,4.15,High,SMB exposure can increase file-sharing and lateral-movement risk.,"Restrict SMB to trusted internal networks, disable unused shares, patch systems, and monitor access."
+192.168.56.10,lab-server.local,3389,tcp,open,ms-wbt-server,Microsoft Terminal Services,,High,RDP is a remote administration service and should not be broadly exposed.,"Place RDP behind VPN, enforce MFA/NLA, restrict by IP allowlist, and monitor login attempts."

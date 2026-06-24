@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ScopeForge Report - {{ scan.project }}{% if scan.scan_name %} - {{ scan.scan_name }}{% endif %}</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: #334155;
+      --blue: #38bdf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --orange: #f97316;
+      --red: #ef4444;
+      --purple: #a78bfa;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #020617 0%, #0f172a 60%, #111827 100%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: 36px 24px 72px; }
+    .cover {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 34px;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.2), transparent 35%), var(--panel);
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+      margin-bottom: 28px;
+    }
+    .brand { color: var(--blue); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; }
+    h1 { margin: 12px 0 10px; font-size: 42px; line-height: 1.1; }
+    h2 { margin-top: 32px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    h3 { margin-bottom: 8px; }
+    .subtitle { color: var(--muted); font-size: 17px; max-width: 900px; }
+    .meta-grid, .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
+    .meta, .card, .section, .finding {
+      background: rgba(17, 24, 39, .85);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .meta-label, .card-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .meta-value { font-weight: 700; word-break: break-word; }
+    .card-value { font-size: 32px; font-weight: 800; margin-top: 4px; }
+    .section { margin-top: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; overflow: hidden; border-radius: 12px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { text-align: left; color: #cbd5e1; background: #0b1220; font-size: 13px; }
+    tr:hover td { background: rgba(56, 189, 248, .04); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    code { background: #020617; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); }
+    pre { background: #020617; border: 1px solid var(--line); border-radius: 14px; padding: 16px; overflow: auto; color: #cbd5e1; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+    .risk-Critical { background: rgba(239,68,68,.22); color: #fecaca; border: 1px solid rgba(239,68,68,.6); }
+    .risk-High { background: rgba(249,115,22,.20); color: #fed7aa; border: 1px solid rgba(249,115,22,.55); }
+    .risk-Medium { background: rgba(234,179,8,.18); color: #fef08a; border: 1px solid rgba(234,179,8,.50); }
+    .risk-Low { background: rgba(34,197,94,.16); color: #bbf7d0; border: 1px solid rgba(34,197,94,.45); }
+    .risk-Info { background: rgba(148,163,184,.14); color: #cbd5e1; border: 1px solid rgba(148,163,184,.35); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .finding { margin: 14px 0; }
+    .finding-title { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    details { margin-top: 14px; }
+    summary { cursor: pointer; color: var(--blue); font-weight: 700; }
+    .footer { color: var(--muted); margin-top: 38px; font-size: 13px; }
+    .muted { color: var(--muted); }
+    .chart-row { display: flex; align-items: center; gap: 10px; margin: 9px 0; }
+    .bar { flex: 1; height: 10px; background: #020617; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); }
+    @media print {
+      body { background: white; color: #111827; }
+      .cover, .section, .meta, .card, .finding { box-shadow: none; background: white; border-color: #d1d5db; }
+      th { background: #f3f4f6; color: #111827; }
+      pre, code { background: #f8fafc; color: #111827; }
+      .page { padding: 20px; }
+      a { color: #111827; }
+    }
+    @media (max-width: 850px) { .meta-grid, .cards, .two-col { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="cover">
+      <div class="brand">ScopeForge CLI</div>
+      <h1>Security Scan Report</h1>
+      <p class="subtitle">Nmap scan evidence, parsed service inventory, risk triage, and meeting-ready reporting for authorized security assessments.</p>
+      <div class="meta-grid">
+        <div class="meta"><div class="meta-label">Project</div><div class="meta-value">{{ scan.project }}</div></div>
+        <div class="meta"><div class="meta-label">Scan Name</div><div class="meta-value">{{ scan.scan_name or "Auto timestamped scan" }}</div></div>
+        <div class="meta"><div class="meta-label">Nmap Version</div><div class="meta-value">{{ scan.nmap_version or "Unknown" }}</div></div>
+        <div class="meta"><div class="meta-label">Generated From</div><div class="meta-value">{{ scan.scan_dir }}</div></div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card"><div class="card-label">Hosts Scanned</div><div class="card-value">{{ stats.hosts_scanned }}</div></div>
+      <div class="card"><div class="card-label">Live Hosts</div><div class="card-value">{{ stats.live_hosts }}</div></div>
+      <div class="card"><div class="card-label">Open Ports</div><div class="card-value">{{ stats.open_ports }}</div></div>
+      <div class="card"><div class="card-label">High-Risk Services</div><div class="card-value">{{ stats.high_risk_services }}</div></div>
+    </section>
+
+    <section class="section">
+      <h2>Executive Summary</h2>
+      <p>This report identified <strong>{{ stats.live_hosts }}</strong> live host(s) and <strong>{{ stats.open_ports }}</strong> open service(s). <strong>{{ stats.high_risk_services }}</strong> service(s) were flagged as high-priority review items based on exposure rules such as remote administration, file-sharing, database, or legacy service indicators.</p>
+      <p class="muted">No exploitation is performed by ScopeForge. Findings in this report are based on Nmap discovery/service output and transparent risk rules. Treat them as review priorities unless further validation confirms a vulnerability.</p>
+    </section>
+
+    <section class="section">
+      <h2>Scan Proof & Metadata</h2>
+      <div class="two-col">
+        <div>
+          <p><strong>Command executed:</strong></p>
+          <pre>{{ scan.command or "Command unavailable in XML metadata" }}</pre>
+          <p><strong>Start:</strong> {{ scan.start_time or "Unknown" }}<br />
+          <strong>End:</strong> {{ scan.end_time or "Unknown" }}<br />
+          <strong>Elapsed:</strong> {{ scan.elapsed or "Unknown" }}</p>
+        </div>
+        <div>
+          <p><strong>Generated evidence files:</strong></p>
+          <ul>
+            <li><code>raw/scan.nmap</code></li>
+            <li><code>raw/scan.xml</code></li>
+            <li><code>raw/scan.gnmap</code></li>
+            <li><code>exports/report.html</code></li>
+            <li><code>exports/report.md</code></li>
+            <li><code>exports/services.csv</code></li>
+            <li><code>exports/parsed-results.json</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Risk Distribution</h2>
+      {% set total = stats.open_ports if stats.open_ports else 1 %}
+      {% for risk, count in stats.risk_counts.items() %}
+      <div class="chart-row"><span style="width:85px"><span class="badge risk-{{ risk }}">{{ risk }}</span></span><div class="bar"><div class="fill" style="width: {{ (count / total * 100)|round(1) }}%"></div></div><strong>{{ count }}</strong></div>
+      {% endfor %}
+    </section>
+
+    <section class="section">
+      <h2>Host Summary</h2>
+      <table>
+        <thead><tr><th>Host</th><th>Hostnames</th><th>Status</th><th>Open Ports</th><th>OS Guesses</th></tr></thead>
+        <tbody>
+          {% for host in scan.hosts %}
+          <tr>
+            <td><code>{{ host.address }}</code></td>
+            <td>{{ host.hostnames|join(', ') or '—' }}</td>
+            <td>{{ host.status }}</td>
+            <td>{{ host.ports|selectattr('state','equalto','open')|list|length }}</td>
+            <td>{{ host.os_matches|join('; ') or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>Services Inventory</h2>
+      <table>
+        <thead><tr><th>Host</th><th>Port</th><th>Service</th><th>Product / Version</th><th>Risk</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          {% for port in scan.all_ports %}
+          <tr>
+            <td><code>{{ port.host }}</code><br /><span class="muted">{{ port.hostname }}</span></td>
+            <td>{{ port.port }}/{{ port.protocol }}<br /><span class="muted">{{ port.state }}</span></td>
+            <td>{{ port.service }}</td>
+            <td>{{ [port.product, port.version, port.extrainfo]|select|join(' ') or '—' }}</td>
+            <td><span class="badge risk-{{ port.risk }}">{{ port.risk }}</span><br /><span class="muted">{{ port.reason }}</span></td>
+            <td>{{ port.recommendation }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>Priority Findings</h2>
+      {% set findings = scan.all_ports|selectattr('risk','in',['Critical','High','Medium'])|list %}
+      {% if findings %}
+        {% for port in findings %}
+        <article class="finding">
+          <div class="finding-title"><h3>{{ port.service|upper }} exposure on {{ port.host }}:{{ port.port }}</h3><span class="badge risk-{{ port.risk }}">{{ port.risk }}</span></div>
+          <p><strong>Evidence:</strong> <code>{{ port.port }}/{{ port.protocol }} {{ port.state }} {{ port.service }} {{ port.product }} {{ port.version }}</code></p>
+          <p><strong>Impact:</strong> {{ port.reason }}</p>
+          <p><strong>Recommendation:</strong> {{ port.recommendation }}</p>
+        </article>
+        {% endfor %}
+      {% else %}
+        <p>No high or medium review items were generated by the current risk rules.</p>
+      {% endif %}
+    </section>
+
+    <section class="section">
+      <h2>Raw Evidence Appendix</h2>
+      <details>
+        <summary>Show raw Nmap normal output</summary>
+        <pre>{{ raw_output or "Raw normal output not available." }}</pre>
+      </details>
+    </section>
+
+    <section class="section">
+      <h2>Limitations & Disclaimer</h2>
+      <p>This report is based on Nmap discovery/service output and ScopeForge risk rules. It does not confirm vulnerabilities unless they are manually validated. No exploitation, brute force, malware, stealth scanning, or intrusive testing is performed by ScopeForge itself.</p>
+      <p>Use only on systems you own or have explicit written permission to assess. The user is responsible for lawful and authorized use.</p>
+    </section>
+
+    <p class="footer">Generated by ScopeForge CLI. Local-only tool; no telemetry or cloud upload.</p>
+  </main>
+</body>
+</html>

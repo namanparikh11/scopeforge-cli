@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<nmaprun scanner="nmap" args="nmap -sV --top-ports 100 -oA raw/scan 192.168.56.10" start="1782329400" startstr="Wed Jun 24 20:30:00 2026" version="7.95" xmloutputversion="1.05">
+  <scaninfo type="syn" protocol="tcp" numservices="100" services="top-ports" />
+  <host starttime="1782329401" endtime="1782329415">
+    <status state="up" reason="syn-ack" reason_ttl="64" />
+    <address addr="192.168.56.10" addrtype="ipv4" />
+    <hostnames>
+      <hostname name="lab-server.local" type="PTR" />
+    </hostnames>
+    <ports>
+      <port protocol="tcp" portid="22">
+        <state state="open" reason="syn-ack" reason_ttl="64" />
+        <service name="ssh" product="OpenSSH" version="8.9p1" extrainfo="Ubuntu Linux" method="probed" conf="10" />
+      </port>
+      <port protocol="tcp" portid="80">
+        <state state="open" reason="syn-ack" reason_ttl="64" />
+        <service name="http" product="Apache httpd" version="2.4.52" method="probed" conf="10" />
+      </port>
+      <port protocol="tcp" portid="445">
+        <state state="open" reason="syn-ack" reason_ttl="64" />
+        <service name="microsoft-ds" product="Samba smbd" version="4.15" method="probed" conf="10" />
+      </port>
+      <port protocol="tcp" portid="3389">
+        <state state="open" reason="syn-ack" reason_ttl="64" />
+        <service name="ms-wbt-server" product="Microsoft Terminal Services" method="probed" conf="10" />
+      </port>
+    </ports>
+    <os>
+      <osmatch name="Linux 5.x" accuracy="94" />
+    </os>
+  </host>
+  <runstats>
+    <finished time="1782329416" timestr="Wed Jun 24 20:30:16 2026" elapsed="16.23" summary="Nmap done at Wed Jun 24 20:30:16 2026; 1 IP address (1 host up) scanned in 16.23 seconds" exit="success" />
+    <hosts up="1" down="0" total="1" />
+  </runstats>
+</nmaprun>

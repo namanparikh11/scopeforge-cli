@@ -242,7 +242,7 @@ def cmd_scan(argv: list[str]) -> int:
 
     print_summary(result, outputs, scan_root)
     if config.make_pdf and "pdf" not in outputs:
-        console.print("[yellow]PDF was requested but could not be generated. For pipx installs run: pipx inject scopeforge-cli "weasyprint>=62.0"[/yellow]")
+        console.print('[yellow]PDF was requested but could not be generated. For pipx installs run: pipx inject scopeforge-cli "weasyprint>=62.0"[/yellow]')
     if config.open_report and "html" in outputs:
         webbrowser.open(outputs["html"].resolve().as_uri())
     return 0

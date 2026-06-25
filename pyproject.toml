@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scopeforge-cli"
-version = "0.1.0"
+version = "1.0.0"
 description = "Smart Nmap wrapper that stores raw evidence and generates professional reports."
 readme = "README.md"
 requires-python = ">=3.10"

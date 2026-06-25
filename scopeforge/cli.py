@@ -14,6 +14,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from scopeforge import __version__
 from scopeforge.models import ScanPaths
 from scopeforge.nmap_runner import (
     NmapNotFoundError,
@@ -241,7 +242,7 @@ def cmd_scan(argv: list[str]) -> int:
 
     print_summary(result, outputs, scan_root)
     if config.make_pdf and "pdf" not in outputs:
-        console.print("[yellow]PDF was requested but could not be generated. Install optional dependency: pip install 'scopeforge-cli[pdf]'[/yellow]")
+        console.print("[yellow]PDF was requested but could not be generated. For pipx installs run: pipx inject scopeforge-cli "weasyprint>=62.0"[/yellow]")
     if config.open_report and "html" in outputs:
         webbrowser.open(outputs["html"].resolve().as_uri())
     return 0
@@ -362,7 +363,7 @@ def main() -> int:
     if argv[0] in {"nmap-help", "commands"}:
         return cmd_nmap_help()
     if argv[0] == "version":
-        console.print("ScopeForge CLI 0.1.0")
+        console.print(f"ScopeForge CLI {__version__}")
         return 0
 
     return cmd_scan(argv)

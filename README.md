@@ -25,16 +25,47 @@ Nmap is excellent for network discovery and security auditing. Its XML output is
 - Optional PDF export using WeasyPrint
 - Local-only: no telemetry, no cloud upload, no account
 
-## Install
+## Quick install
 
-Nmap must be installed separately.
+Normal users do **not** need to create or activate a virtual environment. Install with `pipx`; it makes the `sfmap` command available from anywhere while keeping Python dependencies isolated automatically.
 
 ```bash
 sudo apt update
-sudo apt install nmap
+sudo apt install -y nmap pipx
+pipx ensurepath
+pipx install git+https://github.com/namanparikh11/scopeforge-cli.git
+sfmap --help
 ```
 
-Then install ScopeForge from the repo:
+If `sfmap` is not found immediately, open a new terminal or run:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+### Optional PDF support
+
+HTML, Markdown, CSV, and JSON reports work by default. PDF export requires WeasyPrint:
+
+```bash
+pipx inject scopeforge-cli "weasyprint>=62.0"
+```
+
+If WeasyPrint needs system libraries on your Linux distribution:
+
+```bash
+sudo apt install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 shared-mime-info
+```
+
+Run with PDF export:
+
+```bash
+sfmap -sV --top-ports 100 127.0.0.1 --sf-project local-test --sf-name localhost --sf-pdf --sf-open
+```
+
+### Developer install
+
+Use this only if you want to modify the code locally:
 
 ```bash
 git clone https://github.com/namanparikh11/scopeforge-cli.git
@@ -44,11 +75,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-Optional PDF support:
-
-```bash
-pip install -e '.[pdf]'
-```
+Full installation details are in [`docs/INSTALL.md`](docs/INSTALL.md).
 
 ## Basic usage
 
@@ -191,7 +218,7 @@ Nmap reports can contain IP addresses, hostnames, service banners, and internal 
 
 ## Roadmap
 
-- PDF styling improvements
+- PDF layout refinements and optional report themes
 - Report hash/signature for proof-of-scan integrity
 - Scope file validation
 - Diff mode between two scans

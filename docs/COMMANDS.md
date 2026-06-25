@@ -87,8 +87,3 @@ Open latest HTML report.
 ## Output flags
 
 ScopeForge manages output automatically with Nmap `-oA`, so avoid passing Nmap output flags manually.
-
-
-## Repository
-
-https://github.com/namanparikh11/scopeforge-cli

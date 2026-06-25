@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-from datetime import datetime
+import subprocess
 import sys
-import webbrowser
+from datetime import datetime
 from pathlib import Path
 from typing import NamedTuple
 
@@ -28,6 +28,23 @@ from scopeforge.reporting import generate_all_reports
 from scopeforge.utils import build_scan_folder, find_latest_report, slugify
 
 console = Console()
+
+
+def open_report_silently(report_path: Path) -> None:
+    """Open a report without letting GUI app warnings pollute the terminal."""
+    path = report_path.resolve()
+    try:
+        if sys.platform.startswith("linux"):
+            subprocess.Popen(["xdg-open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        elif os.name == "nt":
+            os.startfile(str(path))  # type: ignore[attr-defined]
+        else:
+            subprocess.Popen(["xdg-open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as exc:
+        console.print(f"[yellow]Could not auto-open report:[/yellow] {exc}")
+        console.print(f"[cyan]Open manually:[/cyan] {path}")
 
 BANNER = r"""
   ____                        ______
@@ -244,7 +261,7 @@ def cmd_scan(argv: list[str]) -> int:
     if config.make_pdf and "pdf" not in outputs:
         console.print('[yellow]PDF was requested but could not be generated. For pipx installs run: pipx inject scopeforge-cli "weasyprint>=62.0"[/yellow]')
     if config.open_report and "html" in outputs:
-        webbrowser.open(outputs["html"].resolve().as_uri())
+        open_report_silently(outputs["html"])
     return 0
 
 
@@ -272,7 +289,7 @@ def cmd_import(argv: list[str]) -> int:
     outputs = generate_all_reports(result, scan_root, raw_nmap_path=paths.raw / "scan.nmap", make_pdf=config.make_pdf)
     print_summary(result, outputs, scan_root)
     if config.open_report and "html" in outputs:
-        webbrowser.open(outputs["html"].resolve().as_uri())
+        open_report_silently(outputs["html"])
     return 0
 
 
@@ -315,7 +332,7 @@ def cmd_open(argv: list[str]) -> int:
         console.print(f"[red]Report not found:[/red] {report}")
         return 1
     console.print(f"[green]Opening:[/green] {report}")
-    webbrowser.open(report.resolve().as_uri())
+    open_report_silently(report)
     return 0
 
 

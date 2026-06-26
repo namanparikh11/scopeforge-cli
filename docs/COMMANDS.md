@@ -2,6 +2,18 @@
 
 `sfmap` is a smart wrapper around Nmap. Use normal Nmap options, then add ScopeForge-only options beginning with `--sf-`.
 
+## Version and help
+
+```bash
+sfmap --version
+sfmap version
+sfmap -V
+sfmap --help
+sfmap nmap-help
+```
+
+Use `sfmap --version`, `sfmap version`, or `sfmap -V` for the ScopeForge version. Use `sfmap nmap-help` when you want Nmap option help.
+
 ## Normal Nmap-style examples through sfmap
 
 ```bash

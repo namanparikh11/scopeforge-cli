@@ -13,6 +13,7 @@ sudo apt update
 sudo apt install -y nmap pipx
 pipx ensurepath
 pipx install git+https://github.com/namanparikh11/scopeforge-cli.git
+sfmap --version
 sfmap --help
 ```
 

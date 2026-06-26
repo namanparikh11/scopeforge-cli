@@ -34,6 +34,7 @@ sudo apt update
 sudo apt install -y nmap pipx
 pipx ensurepath
 pipx install git+https://github.com/namanparikh11/scopeforge-cli.git
+sfmap --version
 sfmap --help
 ```
 
@@ -115,6 +116,14 @@ Open latest report:
 sfmap open latest
 ```
 
+Show ScopeForge version:
+
+```bash
+sfmap --version
+# or
+sfmap version
+```
+
 Show command reference:
 
 ```bash
@@ -159,6 +168,20 @@ Use these options in addition to normal Nmap options:
 --sf-allow-output-flags Allow user-supplied Nmap -o* flags (not recommended)
 --sf-no-banner          Hide the ScopeForge banner
 ```
+
+
+## Version and help commands
+
+```bash
+sfmap --version
+sfmap version
+sfmap -V
+sfmap --help
+sfmap -h
+sfmap nmap-help
+```
+
+`sfmap --version` and `sfmap -V` show the ScopeForge version directly. They are not passed through to Nmap as scan commands.
 
 ## Nmap output handling
 

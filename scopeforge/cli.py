@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import argparse
 import os
 import shutil
 import subprocess
@@ -67,6 +66,10 @@ WRAPPER_OPTIONS = {
     "--sf-no-banner": False,
 }
 
+HELP_FLAGS = {"help", "--help", "-h"}
+VERSION_FLAGS = {"version", "--version", "-V", "--sf-version"}
+NMAP_INFO_FLAGS = {"--version", "-V", "--help", "-h"}
+
 HELP_TEXT = """
 ScopeForge CLI / sfmap
 
@@ -76,6 +79,7 @@ Usage:
   sfmap reports [--sf-dir DIRECTORY]
   sfmap open latest|PATH [--sf-dir DIRECTORY]
   sfmap nmap-help
+  sfmap version|--version|-V
 
 Examples:
   sfmap -sV 192.168.1.1
@@ -84,6 +88,7 @@ Examples:
   sfmap import samples/sample-nmap.xml --sf-project demo --sf-name imported-scan
   sfmap reports
   sfmap open latest
+  sfmap --version
 
 ScopeForge options:
   --sf-project NAME       Project/workspace folder under reports/  [default: default]
@@ -183,6 +188,28 @@ def split_wrapper_options(argv: list[str]) -> WrapperConfig:
     )
 
 
+def print_version() -> None:
+    console.print(f"ScopeForge CLI {__version__}")
+
+
+def print_no_xml_help(xml_path: Path) -> None:
+    console.print("[bold red]No Nmap XML output was created.[/bold red]")
+    console.print(f"Expected XML file: [cyan]{xml_path}[/cyan]")
+    console.print(
+        "This can happen when an informational Nmap flag such as [bold]--version[/bold] "
+        "or [bold]--help[/bold] is passed as a scan command instead of using a "
+        "ScopeForge command."
+    )
+    console.print(
+        "Use [green]sfmap --version[/green] or [green]sfmap version[/green] "
+        "for the ScopeForge version."
+    )
+    console.print(
+        "Use [green]sfmap --help[/green] for ScopeForge help or "
+        "[green]sfmap nmap-help[/green] for Nmap help."
+    )
+
+
 def print_summary(result, outputs: dict[str, Path], scan_root: Path) -> None:
     stats = result.stats()
     table = Table(title="ScopeForge Scan Summary", show_lines=False)
@@ -206,6 +233,22 @@ def print_summary(result, outputs: dict[str, Path], scan_root: Path) -> None:
 def cmd_scan(argv: list[str]) -> int:
     config = split_wrapper_options(argv)
     print_banner(config.no_banner)
+
+    if not config.remainder:
+        console.print("[bold red]Error:[/bold red] No Nmap arguments or target provided.")
+        console.print("Example: [green]sfmap -sV 192.168.1.1[/green]")
+        console.print(
+            "Use [green]sfmap --help[/green] for ScopeForge help or "
+            "[green]sfmap nmap-help[/green] for Nmap help."
+        )
+        return 2
+
+    if len(config.remainder) == 1 and config.remainder[0] in NMAP_INFO_FLAGS:
+        if config.remainder[0] in {"--version", "-V"}:
+            print_version()
+        else:
+            console.print(HELP_TEXT, markup=False)
+        return 0
 
     scan_root = build_scan_folder(config.base_dir, config.project, config.scan_name)
     paths = ScanPaths.create(scan_root)
@@ -248,6 +291,10 @@ def cmd_scan(argv: list[str]) -> int:
         console.print("[yellow]Report generation skipped by --sf-no-report.[/yellow]")
         return 0
 
+    if not xml_path.exists():
+        print_no_xml_help(xml_path)
+        return 3
+
     try:
         result = parse_nmap_xml(xml_path, project=config.project, scan_name=config.scan_name, scan_dir=str(scan_root))
     except NmapParseError as exc:
@@ -273,10 +320,21 @@ def cmd_import(argv: list[str]) -> int:
     config = split_wrapper_options(argv[1:])
     print_banner(config.no_banner)
 
+    if not xml_file.exists():
+        console.print(f"[bold red]Import file not found:[/bold red] {xml_file}")
+        return 1
+    if not xml_file.is_file():
+        console.print(f"[bold red]Import path is not a file:[/bold red] {xml_file}")
+        return 1
+
     scan_root = build_scan_folder(config.base_dir, config.project, config.scan_name or xml_file.stem)
     paths = ScanPaths.create(scan_root)
     imported_xml = paths.raw / "scan.xml"
-    shutil.copy2(xml_file, imported_xml)
+    try:
+        shutil.copy2(xml_file, imported_xml)
+    except OSError as exc:
+        console.print(f"[bold red]Could not import XML file:[/bold red] {exc}")
+        return 1
     (paths.raw / "scan.nmap").write_text("Imported XML only. Raw normal output was not provided.\n", encoding="utf-8")
     (paths.evidence / "notes.md").write_text("# Analyst Notes\n\nImported existing Nmap XML.\n", encoding="utf-8")
 
@@ -366,9 +424,13 @@ ScopeForge controls output with -oA automatically.
 
 def main() -> int:
     argv = sys.argv[1:]
-    if not argv or argv[0] in {"help", "--help", "-h"}:
+    if not argv or argv[0] in HELP_FLAGS:
         print_banner("--sf-no-banner" in argv)
         console.print(HELP_TEXT, markup=False)
+        return 0
+
+    if argv[0] in VERSION_FLAGS:
+        print_version()
         return 0
 
     if argv[0] == "import":
@@ -379,9 +441,6 @@ def main() -> int:
         return cmd_open(argv[1:])
     if argv[0] in {"nmap-help", "commands"}:
         return cmd_nmap_help()
-    if argv[0] == "version":
-        console.print(f"ScopeForge CLI {__version__}")
-        return 0
 
     return cmd_scan(argv)
 
